@@ -1,0 +1,7 @@
+app:
+  mail:
+    host: test-mail.internal
+    port: 2525
+    username: test-runner
+    auth-enabled: false
+    timeout: 1s

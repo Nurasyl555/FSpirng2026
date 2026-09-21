@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: practice_2
+  profiles:
+    active: dev
+
+app:
+  mail:
+    timeout: 5s
+    auth-enabled: true
