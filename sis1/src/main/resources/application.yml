@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: bookstore-service
+  profiles:
+    active: @activatedProperties@
+
+bookstore:
+  store-name: "KBTU Central Bookstore"
+  max-books-per-author: 50

@@ -1,0 +1,108 @@
+### ====================================================================
+### Bookstore REST API - HTTP Client Collection (SIS 1)
+### Covers: CRUD endpoints, Bean Validation, Unified Error Responses, HTTP Statuses
+### ====================================================================
+
+@baseUrl = http://localhost:8080/api/v1/books
+
+### 1. [POST] Create a valid Book 1 (Expect 201 Created + Location header)
+POST {{baseUrl}}
+Content-Type: application/json
+
+{
+  "title": "Clean Code",
+  "author": "Robert C. Martin",
+  "isbn": "9780132350884",
+  "price": 42.50,
+  "publicationYear": 2008,
+  "description": "A Handbook of Agile Software Craftsmanship"
+}
+
+### 2. [POST] Create a valid Book 2 (Expect 201 Created + Location header)
+POST {{baseUrl}}
+Content-Type: application/json
+
+{
+  "title": "Spring in Action, Sixth Edition",
+  "author": "Craig Walls",
+  "isbn": "9781617297571",
+  "price": 49.99,
+  "publicationYear": 2022,
+  "description": "Comprehensive guide to Spring and Spring Boot"
+}
+
+### 3. [POST] Negative Test - Validation Failure (Expect 400 Bad Request + field error list)
+# Triggers: blank title, invalid ISBN format, negative price, year in future
+POST {{baseUrl}}
+Content-Type: application/json
+
+{
+  "title": "   ",
+  "author": "",
+  "isbn": "invalid-isbn-123",
+  "price": -15.00,
+  "publicationYear": 2099,
+  "description": "Fails validation constraints"
+}
+
+### 4. [POST] Negative Test - Duplicate ISBN Conflict (Expect 409 Conflict)
+# Tries to insert a book with the same ISBN as Book 1
+POST {{baseUrl}}
+Content-Type: application/json
+
+{
+  "title": "Another Clean Code Copy",
+  "author": "Uncle Bob",
+  "isbn": "9780132350884",
+  "price": 35.00,
+  "publicationYear": 2008,
+  "description": "Duplicate ISBN test"
+}
+
+### 5. [GET] Get all books (Expect 200 OK)
+GET {{baseUrl}}
+Accept: application/json
+
+### 6. [GET] Get existing book by ID (Expect 200 OK)
+GET {{baseUrl}}/1
+Accept: application/json
+
+### 7. [GET] Negative Test - Non-existing book ID (Expect 404 Not Found)
+GET {{baseUrl}}/99999
+Accept: application/json
+
+### 8. [PUT] Update existing book by ID (Expect 200 OK)
+PUT {{baseUrl}}/1
+Content-Type: application/json
+
+{
+  "title": "Clean Code: A Handbook of Agile Software Craftsmanship (Revised)",
+  "author": "Robert C. Martin",
+  "isbn": "9780132350884",
+  "price": 39.99,
+  "publicationYear": 2008,
+  "description": "Updated edition with new notes"
+}
+
+### 9. [PUT] Negative Test - Update non-existing book (Expect 404 Not Found)
+PUT {{baseUrl}}/99999
+Content-Type: application/json
+
+{
+  "title": "Ghost Book",
+  "author": "Unknown",
+  "isbn": "9780000000000",
+  "price": 10.00,
+  "publicationYear": 2020,
+  "description": "Should fail with 404"
+}
+
+### 10. [DELETE] Delete existing book by ID (Expect 204 No Content)
+DELETE {{baseUrl}}/1
+
+### 11. [GET] Verify deleted book no longer exists (Expect 404 Not Found)
+GET {{baseUrl}}/1
+Accept: application/json
+
+### 12. [DELETE] Negative Test - Delete already deleted / non-existing book (Expect 404 Not Found)
+DELETE {{baseUrl}}/1

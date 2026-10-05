@@ -10,6 +10,6 @@ public class ConsoleNotificationService implements NotificationService {
 
     @Override
     public void send(String message) {
-        System.out.println("--> Лог в консоль (Console): " + message);
+        System.out.println("--> log in  Console): " + message);
     }
 }
