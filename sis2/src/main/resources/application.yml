@@ -1,0 +1,20 @@
+spring:
+  application:
+    name: bookstore-service
+  profiles:
+    active: @activatedProperties@
+  datasource:
+    url: jdbc:postgresql://localhost:5432/bookdb
+    username: postgres
+    password: Unurasyl06!!
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+bookstore:
+  store-name: "KBTU Central Bookstore"
+  max-books-per-author: 50
