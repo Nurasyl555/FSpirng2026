@@ -1,0 +1,60 @@
+### ====================================================================
+### Bookstore REST API - HTTP Client Collection (Practice 5: AOP & Caching)
+### Covers: CRUD endpoints, Read-Heavy Caching (GET /{id} & GET /catalog),
+###         Cache Eviction/Refresh on POST/PUT/DELETE, AOP Execution Timing
+### ====================================================================
+
+@baseUrl = http://localhost:8080/api/v1/books
+
+### 1. [GET] Read-Heavy Endpoint #1: Get Book by ID (1st call -> Cache MISS, queries DB)
+GET {{baseUrl}}/1
+Accept: application/json
+
+### 2. [GET] Read-Heavy Endpoint #1: Get Book by ID (2nd call -> Cache HIT, 0ms DB skip!)
+GET {{baseUrl}}/1
+Accept: application/json
+
+### 3. [GET] Read-Heavy Endpoint #2: Full Book Catalog (1st call -> Cache MISS)
+GET {{baseUrl}}/catalog
+Accept: application/json
+
+### 4. [GET] Read-Heavy Endpoint #2: Full Book Catalog (2nd call -> Cache HIT)
+GET {{baseUrl}}/catalog
+Accept: application/json
+
+### 5. [POST] Create a new Book (Evicts 'booksList' cache)
+POST {{baseUrl}}
+Content-Type: application/json
+
+{
+  "title": "AspectJ in Action",
+  "author": "Ramnivas Laddad",
+  "isbn": "9781933988054",
+  "price": 47.99,
+  "publicationYear": 2009,
+  "description": "Enterprise AOP with Spring Applications"
+}
+
+### 6. [PUT] Update existing Book by ID (Refreshes 'books' cache via @CachePut & evicts 'booksList')
+PUT {{baseUrl}}/1
+Content-Type: application/json
+
+{
+  "title": "Clean Code (Cached & Updated Edition)",
+  "author": "Robert C. Martin",
+  "isbn": "9780132350884",
+  "price": 41.99,
+  "publicationYear": 2008,
+  "description": "Updated book entry automatically refreshed in Caffeine cache"
+}
+
+### 7. [GET] Verify updated book is served immediately from updated cache
+GET {{baseUrl}}/1
+Accept: application/json
+
+### 8. [DELETE] Delete book by ID (Evicts both 'books' key and 'booksList' cache)
+DELETE {{baseUrl}}/1
+
+### 9. [GET] Paginated list of books
+GET {{baseUrl}}?page=0&size=5&sort=title,asc
+Accept: application/json
