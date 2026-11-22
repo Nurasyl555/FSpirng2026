@@ -1,6 +1,7 @@
 package com.example.sis2.service;
 
 import com.example.sis2.aspect.ServiceLoggingAndTimingAspect;
+import com.example.sis2.client.ExternalBookCatalogClient;
 import com.example.sis2.config.CacheConfig;
 import com.example.sis2.dto.request.CreateBookRequest;
 import com.example.sis2.dto.request.UpdateBookRequest;
@@ -52,6 +53,9 @@ class BookServiceCachingAndAopTest {
 
     @MockitoBean
     private BookMapper bookMapper;
+
+    @MockitoBean
+    private ExternalBookCatalogClient externalBookCatalogClient;
 
     private BookEntity bookEntity;
     private Book domainBook;

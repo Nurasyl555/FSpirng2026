@@ -1,9 +1,11 @@
 package com.example.sis2.service.impl;
 
+import com.example.sis2.client.ExternalBookCatalogClient;
 import com.example.sis2.config.CacheConfig;
 import com.example.sis2.dto.request.CreateBookRequest;
 import com.example.sis2.dto.request.UpdateBookRequest;
 import com.example.sis2.dto.response.BookResponse;
+import com.example.sis2.dto.response.ExternalBookMetadataResponse;
 import com.example.sis2.entity.BookEntity;
 import com.example.sis2.exception.DuplicateResourceException;
 import com.example.sis2.exception.ResourceNotFoundException;
@@ -32,6 +34,7 @@ public class BookServiceImpl implements BookService {
 
     private final BookRepository bookRepository;
     private final BookMapper bookMapper;
+    private final ExternalBookCatalogClient externalBookCatalogClient;
 
     @Override
     @Transactional
@@ -108,5 +111,17 @@ public class BookServiceImpl implements BookService {
         BookEntity entity = bookRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Book with id " + id + " not found"));
         bookRepository.delete(entity);
+    }
+
+    @Override
+    public ExternalBookMetadataResponse getExternalMetadataByBookId(Long id) {
+        BookEntity entity = bookRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Book with id " + id + " not found"));
+        return externalBookCatalogClient.fetchMetadataByIsbn(entity.getIsbn(), entity.getTitle());
+    }
+
+    @Override
+    public ExternalBookMetadataResponse getExternalMetadataByIsbn(String isbn) {
+        return externalBookCatalogClient.fetchMetadataByIsbn(isbn, null);
     }
 }

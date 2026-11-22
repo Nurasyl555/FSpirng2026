@@ -3,6 +3,7 @@ package com.example.sis2.service;
 import com.example.sis2.dto.request.CreateBookRequest;
 import com.example.sis2.dto.request.UpdateBookRequest;
 import com.example.sis2.dto.response.BookResponse;
+import com.example.sis2.dto.response.ExternalBookMetadataResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -21,4 +22,8 @@ public interface BookService {
     BookResponse update(Long id, UpdateBookRequest request);
 
     void delete(Long id);
+
+    ExternalBookMetadataResponse getExternalMetadataByBookId(Long id);
+
+    ExternalBookMetadataResponse getExternalMetadataByIsbn(String isbn);
 }

@@ -1,8 +1,10 @@
 package com.example.sis2.service;
 
+import com.example.sis2.client.ExternalBookCatalogClient;
 import com.example.sis2.dto.request.CreateBookRequest;
 import com.example.sis2.dto.request.UpdateBookRequest;
 import com.example.sis2.dto.response.BookResponse;
+import com.example.sis2.dto.response.ExternalBookMetadataResponse;
 import com.example.sis2.entity.BookEntity;
 import com.example.sis2.exception.DuplicateResourceException;
 import com.example.sis2.exception.ResourceNotFoundException;
@@ -43,6 +45,9 @@ class BookServiceImplTest {
 
     @Mock
     private BookMapper bookMapper;
+
+    @Mock
+    private ExternalBookCatalogClient externalBookCatalogClient;
 
     @InjectMocks
     private BookServiceImpl bookService;
@@ -275,5 +280,29 @@ class BookServiceImplTest {
 
         verify(bookRepository).findById(99L);
         verify(bookRepository, never()).delete(any());
+    }
+
+    @Test
+    @DisplayName("getExternalMetadataByBookId() should look up book and call ExternalBookCatalogClient")
+    void getExternalMetadataByBookId_WhenBookExists_ShouldDelegateToExternalClient() {
+        ExternalBookMetadataResponse externalResponse = ExternalBookMetadataResponse.builder()
+                .isbn("9780134494166")
+                .title("Clean Architecture")
+                .publisher("Prentice Hall")
+                .numberOfPages(432)
+                .source(ExternalBookCatalogClient.SOURCE_OPEN_LIBRARY)
+                .fallback(false)
+                .build();
+
+        when(bookRepository.findById(1L)).thenReturn(Optional.of(bookEntity));
+        when(externalBookCatalogClient.fetchMetadataByIsbn("9780134494166", "Clean Architecture"))
+                .thenReturn(externalResponse);
+
+        ExternalBookMetadataResponse result = bookService.getExternalMetadataByBookId(1L);
+
+        assertThat(result).isNotNull();
+        assertThat(result.getPublisher()).isEqualTo("Prentice Hall");
+        assertThat(result.isFallback()).isFalse();
+        verify(externalBookCatalogClient).fetchMetadataByIsbn("9780134494166", "Clean Architecture");
     }
 }

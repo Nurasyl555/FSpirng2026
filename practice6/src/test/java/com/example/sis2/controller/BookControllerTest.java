@@ -1,8 +1,10 @@
 package com.example.sis2.controller;
 
+import com.example.sis2.client.ExternalBookCatalogClient;
 import com.example.sis2.dto.request.CreateBookRequest;
 import com.example.sis2.dto.request.UpdateBookRequest;
 import com.example.sis2.dto.response.BookResponse;
+import com.example.sis2.dto.response.ExternalBookMetadataResponse;
 import com.example.sis2.exception.DuplicateResourceException;
 import com.example.sis2.exception.GlobalExceptionHandler;
 import com.example.sis2.exception.ResourceNotFoundException;
@@ -272,5 +274,57 @@ class BookControllerTest {
         mockMvc.perform(delete("/api/v1/books/99"))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.status", is(404)));
+    }
+
+    @Test
+    @DisplayName("GET /api/v1/books/{id}/external-metadata should return 200 OK with external metadata")
+    void getExternalMetadataByBookId_ShouldReturn200() throws Exception {
+        ExternalBookMetadataResponse externalResponse = ExternalBookMetadataResponse.builder()
+                .isbn("9780134494166")
+                .title("Clean Architecture")
+                .publisher("Prentice Hall")
+                .numberOfPages(432)
+                .previewUrl("https://openlibrary.org/isbn/9780134494166")
+                .source(ExternalBookCatalogClient.SOURCE_OPEN_LIBRARY)
+                .fallback(false)
+                .message("Successfully fetched metadata from external OpenLibrary API")
+                .retrievedAt(Instant.parse("2026-11-09T09:30:00Z"))
+                .build();
+
+        when(bookService.getExternalMetadataByBookId(1L)).thenReturn(externalResponse);
+
+        mockMvc.perform(get("/api/v1/books/1/external-metadata")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.isbn", is("9780134494166")))
+                .andExpect(jsonPath("$.publisher", is("Prentice Hall")))
+                .andExpect(jsonPath("$.numberOfPages", is(432)))
+                .andExpect(jsonPath("$.source", is("OPEN_LIBRARY_API")))
+                .andExpect(jsonPath("$.fallback", is(false)));
+    }
+
+    @Test
+    @DisplayName("GET /api/v1/books/external/isbn/{isbn} should return 200 OK even when fallback is used")
+    void getExternalMetadataByIsbn_WhenFallback_ShouldReturn200() throws Exception {
+        ExternalBookMetadataResponse fallbackResponse = ExternalBookMetadataResponse.builder()
+                .isbn("9780132350884")
+                .title("Book (ISBN 9780132350884)")
+                .publisher("KBTU Bookstore Fallback Catalog")
+                .numberOfPages(0)
+                .previewUrl("https://openlibrary.org/isbn/9780132350884")
+                .source(ExternalBookCatalogClient.SOURCE_FALLBACK)
+                .fallback(true)
+                .message("External service unavailable or timed out; fallback activated")
+                .retrievedAt(Instant.parse("2026-11-09T09:30:00Z"))
+                .build();
+
+        when(bookService.getExternalMetadataByIsbn("9780132350884")).thenReturn(fallbackResponse);
+
+        mockMvc.perform(get("/api/v1/books/external/isbn/9780132350884")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.isbn", is("9780132350884")))
+                .andExpect(jsonPath("$.source", is("FALLBACK_LOCAL")))
+                .andExpect(jsonPath("$.fallback", is(true)));
     }
 }
