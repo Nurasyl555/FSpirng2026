@@ -1,0 +1,50 @@
+### ====================================================================
+### Bookstore REST API - HTTP Client Collection (Practice 6: Swagger UI & External Service)
+### Covers: OpenAPI /v3/api-docs, Swagger UI, External OpenLibrary Calls with Timeouts & Fallback,
+###         plus CRUD and Cached Endpoints
+### ====================================================================
+
+@host = http://localhost:8080
+@baseUrl = {{host}}/api/v1/books
+
+### 1. [GET] OpenAPI 3.0 JSON Specification (springdoc-openapi)
+GET {{host}}/v3/api-docs
+Accept: application/json
+
+### 2. [GET] Swagger UI HTML Page
+GET {{host}}/swagger-ui.html
+Accept: text/html
+
+### 3. [GET] External Service Call #1: Enrich stored book (id=1) with OpenLibrary metadata
+###    Uses configured connect-timeout (2s) and read-timeout (3s); returns fallback if offline/slow
+GET {{baseUrl}}/1/external-metadata
+Accept: application/json
+
+### 4. [GET] External Service Call #2: Query OpenLibrary directly by ISBN (Clean Code: 9780132350884)
+GET {{baseUrl}}/external/isbn/9780132350884
+Accept: application/json
+
+### 5. [GET] External Service Call #3: Unknown ISBN -> Triggers graceful fallback response (HTTP 200, fallback=true)
+GET {{baseUrl}}/external/isbn/0000000000000
+Accept: application/json
+
+### 6. [GET] Read-Heavy Endpoint: Get Book by ID (Cached via Caffeine)
+GET {{baseUrl}}/1
+Accept: application/json
+
+### 7. [GET] Read-Heavy Endpoint: Full Book Catalog (Cached via Caffeine)
+GET {{baseUrl}}/catalog
+Accept: application/json
+
+### 8. [POST] Create a new Book
+POST {{baseUrl}}
+Content-Type: application/json
+
+{
+  "title": "Spring Microservices in Action",
+  "author": "John Carnell",
+  "isbn": "9781617293986",
+  "price": 49.99,
+  "publicationYear": 2017,
+  "description": "Resilient microservice patterns with Spring Boot"
+}
