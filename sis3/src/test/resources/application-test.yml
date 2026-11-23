@@ -12,3 +12,8 @@ spring:
         format_sql: true
   flyway:
     enabled: true
+  kafka:
+    admin:
+      auto-create: false
+    listener:
+      auto-startup: false

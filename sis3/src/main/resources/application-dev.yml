@@ -4,4 +4,4 @@ server:
 logging:
   level:
     root: INFO
-    com.example.sis2: DEBUG
+    com.example.sis3: DEBUG

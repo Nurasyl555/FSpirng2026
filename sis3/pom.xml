@@ -9,10 +9,10 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.example</groupId>
-    <artifactId>practice6</artifactId>
+    <artifactId>sis3</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>practice6</name>
-    <description>Practice 6 - OpenAPI / Swagger UI and Resilient External Service Call with Timeouts and Fallback</description>
+    <name>sis3</name>
+    <description>SIS 3 - Documented API, Resilient REST Client, AOP/Caching and Event-Driven Kafka with DLT</description>
 
     <properties>
         <java.version>21</java.version>
@@ -101,6 +101,17 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-configuration-processor</artifactId>
             <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-kafka</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-kafka-test</artifactId>
+            <scope>test</scope>
         </dependency>
 
         <!-- Testing -->
