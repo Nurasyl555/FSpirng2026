@@ -1,7 +1,8 @@
 ### ====================================================================
-### Bookstore REST API - HTTP Client Collection (Practice 6: Swagger UI & External Service)
-### Covers: OpenAPI /v3/api-docs, Swagger UI, External OpenLibrary Calls with Timeouts & Fallback,
-###         plus CRUD and Cached Endpoints
+### Bookstore REST API - HTTP Client Collection (SIS 3)
+### Covers: OpenAPI /v3/api-docs, Swagger UI, External OpenLibrary Calls
+###         (Timeouts + Retries + Fallback), Cached Read Endpoints,
+###         and CRUD Operations Triggering @Audited + Kafka BookEvents
 ### ====================================================================
 
 @host = http://localhost:8080
@@ -16,7 +17,6 @@ GET {{host}}/swagger-ui.html
 Accept: text/html
 
 ### 3. [GET] External Service Call #1: Enrich stored book (id=1) with OpenLibrary metadata
-###    Uses configured connect-timeout (2s) and read-timeout (3s); returns fallback if offline/slow
 GET {{baseUrl}}/1/external-metadata
 Accept: application/json
 
@@ -36,7 +36,11 @@ Accept: application/json
 GET {{baseUrl}}/catalog
 Accept: application/json
 
-### 8. [POST] Create a new Book
+### 8. [GET] Paginated Books
+GET {{baseUrl}}?page=0&size=5&sort=id,asc
+Accept: application/json
+
+### 9. [POST] Create a new Book -> Triggers @Audited(CREATE_BOOK) & Kafka BookEvent(CREATED)
 POST {{baseUrl}}
 Content-Type: application/json
 
@@ -48,3 +52,20 @@ Content-Type: application/json
   "publicationYear": 2017,
   "description": "Resilient microservice patterns with Spring Boot"
 }
+
+### 10. [PUT] Update Book -> Triggers @Audited(UPDATE_BOOK), @CachePut & Kafka BookEvent(UPDATED)
+PUT {{baseUrl}}/1
+Content-Type: application/json
+
+{
+  "title": "Clean Code (Updated Edition)",
+  "author": "Robert C. Martin",
+  "isbn": "9780132350884",
+  "price": 42.50,
+  "publicationYear": 2008,
+  "description": "A Handbook of Agile Software Craftsmanship"
+}
+
+### 11. [DELETE] Delete Book -> Triggers @Audited(DELETE_BOOK), @CacheEvict & Kafka BookEvent(DELETED)
+DELETE {{baseUrl}}/2
+Accept: application/json
