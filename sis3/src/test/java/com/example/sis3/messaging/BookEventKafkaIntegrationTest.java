@@ -1,7 +1,10 @@
 package com.example.sis3.messaging;
 
+import com.example.sis3.dto.request.CreateBookRequest;
+import com.example.sis3.dto.response.BookResponse;
 import com.example.sis3.event.BookEvent;
 import com.example.sis3.event.BookEventType;
+import com.example.sis3.service.BookService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +38,9 @@ class BookEventKafkaIntegrationTest {
 
     @Autowired
     private BookEventProducer bookEventProducer;
+
+    @Autowired
+    private BookService bookService;
 
     @Autowired
     private KafkaTemplate<String, String> kafkaTemplate;
@@ -71,5 +77,31 @@ class BookEventKafkaIntegrationTest {
 
         verify(bookEventConsumer, timeout(15000).times(1))
                 .consumeDeadLetterEvent(eq(brokenPayload), any(), eq("book-events.DLT"), anyLong());
+    }
+
+    @Test
+    @DisplayName("Creating and deleting a book via BookService should trigger @Audited, PostgreSQL commit, Kafka Producer & Consumer")
+    void createAndDeleteBook_EndToEnd_ShouldPublishAfterCommitAndBeConsumed() {
+        CreateBookRequest request = CreateBookRequest.builder()
+                .title("Kafka End-to-End Test Book")
+                .author("Test Author")
+                .isbn("9789999999991")
+                .price(new BigDecimal("29.99"))
+                .publicationYear(2025)
+                .description("End-to-end verification without Docker")
+                .build();
+
+        BookResponse created = bookService.create(request);
+        String key = String.valueOf(created.getId());
+
+        try {
+            verify(bookEventConsumer, timeout(10000).times(1))
+                    .consumeBookEvent(any(String.class), eq(key), anyInt(), anyLong());
+        } finally {
+            bookService.delete(created.getId());
+        }
+
+        verify(bookEventConsumer, timeout(10000).times(2))
+                .consumeBookEvent(any(String.class), eq(key), anyInt(), anyLong());
     }
 }
